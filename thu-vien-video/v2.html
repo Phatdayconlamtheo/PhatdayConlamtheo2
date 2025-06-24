@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Thư viện Video Đẹp</title>
+  </head>
+  <body>
+    <h2>🎬 Bộ sưu tập Video Tâm Linh</h2>
+
+    <div class="video-grid">
+      <div class="video-wrapper">
+        <video src="video1.mp4" muted autoplay loop playsinline></video>
+        <div class="play-button">🔊</div>
+      </div>
+      <div class="video-wrapper">
+        <video src="video2.mp4" muted autoplay loop playsinline></video>
+        <div class="play-button">🔊</div>
+      </div>
+      <div class="video-wrapper">
+        <video src="video3.mp4" muted autoplay loop playsinline></video>
+        <div class="play-button">🔊</div>
+      </div>
+      <div class="video-wrapper">
+        <video src="video4.mp4" muted autoplay loop playsinline></video>
+        <div class="play-button">🔊</div>
+      </div>
+    </div>
+
+    <script>
+      // Cho phép bật tiếng khi click biểu tượng 🔊
+      document.querySelectorAll(".video-wrapper").forEach((wrapper) => {
+        const video = wrapper.querySelector("video");
+        const button = wrapper.querySelector(".play-button");
+
+        button.addEventListener("click", () => {
+          video.muted = false;
+          video.volume = 1;
+          video.play();
+          button.style.display = "none";
+        });
+      });
+    </script>
+  </body>
+</html>

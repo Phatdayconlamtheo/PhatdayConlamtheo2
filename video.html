@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>🎥Video</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="overlay"></div>
+    <header>
+      <h1>🎥Video</h1>
+      <nav>
+        <a href="index.html">Trang Chủ</a>
+        <a href="video.html">🎥Video</a>
+        <a href="bai-viet.html">📖Bài Viết</a>
+        <a href="goc-thien.html">🧘Góc Thiền</a>
+        <a href="tu-sach.html">📚Tủ Sách</a>
+        <a href="tai-mp3.html">🎧Tải MP3</a>
+        <a href="gioi-thieu.html">📜Giới Thiệu</a>
+      </nav>
+    </header>
+    <main>
+      
+      <h2>Danh sách video YouTube</h2>
+      
+  <h3>🎶 Một đoạn nhạc cho tâm hồn bạn</h3>
+
+  <div class="video-block">
+    <iframe id="ytplayer1"
+      src="https://www.youtube.com/embed/e3uG3NOH0BU?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=e3uG3NOH0BU&controls=0&rel=0&modestbranding=1"
+      allow="autoplay"
+      allowfullscreen
+    ></iframe>
+    <button class="mute-toggle" data-player-id="ytplayer1">🔇 Tắt tiếng</button>
+  </div>
+
+  <!-- Thêm nhiều video nếu muốn -->
+  <div class="video-block">
+    <iframe id="ytplayer2"
+      src="https://www.youtube.com/embed/KxGRhd_iWuE?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=KxGRhd_iWuE&controls=0&rel=0&modestbranding=1"
+      allow="autoplay"
+      allowfullscreen
+    ></iframe>
+    <button class="mute-toggle" data-player-id="ytplayer2">🔇 Tắt tiếng</button>
+  </div>
+
+  <script>
+    const players = {};
+
+    function onYouTubeIframeAPIReady() {
+      document.querySelectorAll('iframe[id^="ytplayer"]').forEach(iframe => {
+        const playerId = iframe.id;
+        players[playerId] = new YT.Player(playerId, {
+          events: {
+            'onReady': () => setupMuteButton(playerId)
+          }
+        });
+      });
+    }
+
+    function setupMuteButton(playerId) {
+      const button = document.querySelector(`button[data-player-id="${playerId}"]`);
+      const player = players[playerId];
+
+      button.addEventListener('click', () => {
+        if (player.isMuted()) {
+          player.unMute();
+          fadeVolumeIn(player);
+          button.textContent = '🔊 Đang phát tiếng';
+        } else {
+          player.mute();
+          button.textContent = '🔇 Tắt tiếng';
+        }
+      });
+    }
+
+    function fadeVolumeIn(player) {
+      let volume = 0;
+      player.setVolume(volume);
+      const interval = setInterval(() => {
+        if (volume < 100) {
+          volume += 10;
+          player.setVolume(volume);
+        } else {
+          clearInterval(interval);
+        }
+      }, 200);
+    }
+
+    // Tải API YouTube
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.body.appendChild(tag);
+  </script>
+  
+      
+<!-- Giữ nguyên phần <head> và HTML video như trước -->
+
+<script>
+  const players = {};
+  let fadeSpeed = 200;
+
+  const fadeSlider = document.getElementById('fade-speed');
+  const fadeVal = document.getElementById('fade-val');
+  fadeSlider.addEventListener('input', () => {
+    fadeSpeed = parseInt(fadeSlider.value);
+    fadeVal.textContent = `${fadeSpeed} ms`;
+  });
+
+  const tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  document.body.appendChild(tag);
+
+  function onYouTubeIframeAPIReady() {
+    document.querySelectorAll('.video-block').forEach(block => {
+      const playerId = block.dataset.playerId;
+      const videoId = block.dataset.videoId;
+      const iframe = block.querySelector('iframe');
+      const button = block.querySelector('.mute-toggle');
+
+      iframe.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1`;
+
+      players[playerId] = new YT.Player(playerId, {
+        events: {
+          onReady: () => setupPlayer(playerId, iframe, button)
+        }
+      });
+    });
+  }
+
+  function setupPlayer(playerId, iframe, button) {
+    const player = players[playerId];
+    const key = `muteState_${playerId}`;
+    let isMuted = localStorage.getItem(key) !== 'unmuted';
+
+   
+</body>
+</html>
+
+    </main>
+    <a href="index.html" class="back-link">← Về Trang chủ</a>
+    <footer>
+      <p>© 2025 Phật Dạy Con Làm Theo. Tất cả quyền được bảo lưu.</p>
+      <p>Liên hệ: <a href="mailto:
+    </footer>
+  </body>
+</html>

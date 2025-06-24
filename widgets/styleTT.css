@@ -1,0 +1,23 @@
+/* style.css - giao diện cho weather + news */
+
+#weather-widget {
+  background: #fdf6e3;
+  padding: 10px;
+  text-align: center;
+  font-family: sans-serif;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+}
+
+#news-ticker {
+  background: #222;
+  color: #fff;
+  padding: 10px;
+  font-family: sans-serif;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+marquee {
+  font-weight: 500;
+}

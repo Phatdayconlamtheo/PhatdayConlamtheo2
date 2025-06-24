@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Đọc nội dung trang</title>
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        margin: 40px;
+        transition: background 0.4s, color 0.4s;
+      }
+
+      /* Light mode */
+      body.light {
+        background: #fffaf0;
+        color: #222;
+      }
+
+      /* Dark mode */
+      body.dark {
+        background: #1e1e1e;
+        color: #f0f0f0;
+      }
+
+      button {
+        cursor: pointer;
+        padding: 10px 20px;
+        font-size: 16px;
+        margin-bottom: 20px;
+        background-color: #ffc107;
+        color: #000;
+        border: none;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #e0a800;
+      }
+
+      .arrow {
+        transition: transform 0.4s ease;
+      }
+
+      .rotated {
+        transform: rotate(180deg);
+      }
+
+      #output {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.6s ease, padding 0.3s ease;
+        white-space: pre-line;
+        margin-top: 10px;
+        padding: 0 10px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+      }
+
+      body.dark #output {
+        background: #2b2b2b;
+        border-color: #444;
+      }
+
+      #output.show {
+        padding: 15px;
+        max-height: 1500px; /* đủ lớn để chứa nội dung dài */
+      }
+    </style>
+  </head>
+  <body>
+    <button onclick="toggleRead()">
+      <span id="button-text">📖 ĐỌC NỘI DUNG TRANG</span>
+      <span id="arrow-icon" class="arrow">⬇️</span>
+    </button>
+
+    <div id="output"></div>
+
+    <script>
+      let isLoaded = false;
+
+      function toggleRead() {
+        const output = document.getElementById("output");
+        const btnText = document.getElementById("button-text");
+        const arrow = document.getElementById("arrow-icon");
+
+        if (!isLoaded) {
+          // Lấy các phần tử mong muốn
+          const elements = Array.from(
+            document.querySelectorAll("p, h1, h2, h3, li, blockquote")
+          );
+          const text = elements.map((el) => el.innerText).join("\n\n");
+          output.innerText = text;
+          isLoaded = true;
+        }
+
+        if (output.classList.contains("show")) {
+          output.classList.remove("show");
+          btnText.innerText = "📖 ĐỌC NỘI DUNG TRANG";
+          arrow.classList.remove("rotated");
+          arrow.innerText = "⬇️";
+        } else {
+          output.classList.add("show");
+          btnText.innerText = "🔽 ẨN NỘI DUNG TRANG";
+          arrow.classList.add("rotated");
+          arrow.innerText = "⬆️";
+        }
+      }
+
+      // DARK MODE theo giờ hệ thống
+      function autoSetTheme() {
+        const hour = new Date().getHours();
+        const body = document.body;
+
+        if (hour >= 18 || hour < 6) {
+          body.classList.add("dark");
+          body.classList.remove("light");
+        } else {
+          body.classList.add("light");
+          body.classList.remove("dark");
+        }
+      }
+
+      autoSetTheme();
+    </script>
+  </body>
+</html>

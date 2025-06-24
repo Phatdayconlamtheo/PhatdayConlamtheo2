@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Video có thời tiết & tin tức</title>
+    <link rel="stylesheet" href="widgets/style.css" />
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+
+      #video-container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      #my-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      #weather-widget {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: auto;
+        font-size: 14px;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 6px 12px;
+        border-radius: 8px;
+      }
+
+      #news-ticker {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        font-size: 16px;
+        padding: 8px;
+      }
+
+      marquee {
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="video-container">
+      <!-- VIDEO -->
+      <video id="my-video" autoplay muted loop>
+        <source src="your-video.mp4" type="video/mp4" />
+        Trình duyệt của bạn không hỗ trợ video.
+      </video>
+
+      <!-- WIDGETS sẽ được thêm bằng JS -->
+    </div>
+
+    <!-- CHÈN SCRIPT -->
+    <script src="widgets/weather-widget.js"></script>
+    <script src="widgets/news-ticker.js"></script>
+  </body>
+</html>
