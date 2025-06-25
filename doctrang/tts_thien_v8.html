@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Thiền TTS V8.0</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f5ec;
+      color: #4e3b31;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #8b0000;
+    }
+    #output span {
+      display: block;
+      padding: 4px 8px;
+      margin-bottom: 4px;
+      border-radius: 6px;
+    }
+    .highlight {
+      background-color: #ffe58f;
+      font-weight: bold;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .controls button, .controls select {
+      padding: 6px 10px;
+      font-size: 14px;
+      border-radius: 5px;
+      border: 1px solid #aaa;
+    }
+  </style>
+</head>
+<body>
+  <h2>Thiền TTS V8.0</h2>
+  <div class="controls">
+    <button onclick="toggleRead()">📖 ĐỌC NỘI DUNG TRANG</button>
+    <button id="ttsBtn" onclick="toggleTTS()">🔊 NGHE NỘI DUNG</button>
+    <select id="voiceSelect"><option value="">CHỌN GIỌNG ĐỌC</option></select>
+    <button onclick="startRecording()">⏺️ GHI ÂM</button>
+    <button onclick="stopRecording()">💾 LƯU MP3</button>
+  </div>
+  <div id="output"></div>
+
+  <script>
+    let sentenceQueue = [], currentIdx = 0, isSpeaking = false, utterance;
+    let voices = [], isRecording = false, mediaRecorder, audioChunks = [];
+
+    function removeEmojis(text) {
+      return text.replace(/[\u{1F600}-\u{1F6FF}\u{1F300}-\u{1F5FF}\u{1F700}-\u{1F77F}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+    }
+
+    function toggleRead() {
+      const elements = Array.from(document.querySelectorAll("p, h1, h2, h3, li, blockquote"));
+      const text = elements.map(el => removeEmojis(el.innerText.trim())).filter(s => s).join("\n");
+      sentenceQueue = text.split(/(?<=[.?!])\s+/);
+      const output = document.getElementById("output");
+      output.innerHTML = sentenceQueue.map((s, i) => `<span id="sent-${i}">${s}</span>`).join("");
+    }
+
+    function toggleTTS() {
+      if (!isSpeaking) startReading(); else stopTTS();
+    }
+
+    function startReading() {
+      isSpeaking = true;
+      currentIdx = 0;
+      document.getElementById("ttsBtn").innerText = "⏹️ DỪNG";
+      readNextSentence();
+    }
+
+    function readNextSentence() {
+      if (currentIdx >= sentenceQueue.length) return stopTTS();
+      highlightSentence(currentIdx);
+      const el = document.getElementById(`sent-${currentIdx}`);
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      utterance = new SpeechSynthesisUtterance(sentenceQueue[currentIdx]);
+      utterance.lang = "vi-VN";
+      const selectedVoice = voices.find(v => v.voiceURI === document.getElementById("voiceSelect").value);
+      if (selectedVoice) utterance.voice = selectedVoice;
+
+      utterance.onend = () => {
+        unhighlightSentence(currentIdx);
+        currentIdx++;
+        if (isSpeaking) readNextSentence();
+      };
+
+      speechSynthesis.speak(utterance);
+    }
+
+    function stopTTS() {
+      speechSynthesis.cancel();
+      isSpeaking = false;
+      document.getElementById("ttsBtn").innerText = "🔊 NGHE NỘI DUNG";
+      unhighlightSentence(currentIdx);
+    }
+
+    function highlightSentence(i) {
+      const el = document.getElementById(`sent-${i}`);
+      if (el) el.classList.add("highlight");
+    }
+
+    function unhighlightSentence(i) {
+      const el = document.getElementById(`sent-${i}`);
+      if (el) el.classList.remove("highlight");
+    }
+
+    function loadVoices() {
+      voices = speechSynthesis.getVoices();
+      const voiceSelect = document.getElementById("voiceSelect");
+      voiceSelect.innerHTML = `<option value="">CHỌN GIỌNG ĐỌC</option>`;
+      voices.filter(v => v.lang.startsWith("vi") || v.name.toLowerCase().includes("vietnam")).forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v.voiceURI;
+        opt.textContent = `${v.name} (${v.lang})`;
+        voiceSelect.appendChild(opt);
+      });
+    }
+    speechSynthesis.onvoiceschanged = loadVoices;
+
+    async function startRecording() {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.start();
+      isRecording = true;
+    }
+
+    function stopRecording() {
+      if (!isRecording) return;
+      mediaRecorder.stop();
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunks, { type: 'audio/mp3' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "doc-tts.mp3";
+        a.click();
+      };
+      isRecording = false;
+    }
+  </script>
+</body>
+</html>

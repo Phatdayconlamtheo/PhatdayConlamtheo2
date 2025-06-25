@@ -1,0 +1,173 @@
+<div style="display: flex; gap: 10px; flex-wrap: wrap">
+  <h2 style="text-align: center; color: #8b0000; margin-top: 0px">
+    <button onclick="toggleRead()">
+      <span id="button-text">📖 ĐỌC NỘI DUNG TRANG</span>
+      <span id="arrow-icon" class="arrow">⬇️</span>
+    </button>
+  </h2>
+  <h2 style="text-align: center; color: #8b0000; margin-top: 0px">
+    <button id="ttsBtn" onclick="toggleTTS()">🔊 NGHE NỘI DUNG TRANG</button>
+  </h2>
+  <select id="voiceSelect">
+    <option value="">CHỌN GIỌNG ĐỌC</option>
+  </select>
+</div>
+
+<hr />
+<div id="output"></div>
+
+<script>
+  let isLoaded = false;
+  let isSpeaking = false;
+  let utterance;
+  let sentenceQueue = [];
+  let currentIdx = 0;
+  let voices = [];
+
+  // ✅ HÀM BỎ EMOJI/BIỂU TƯỢNG TRONG VĂN BẢN
+  function removeEmojis(text) {
+    return text.replace(
+      /[\u{1F600}-\u{1F6FF}\u{1F300}-\u{1F5FF}\u{1F700}-\u{1F77F}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,
+      ""
+    );
+  }
+
+  function toggleRead() {
+    const output = document.getElementById("output");
+    const btnText = document.getElementById("button-text");
+    const arrow = document.getElementById("arrow-icon");
+
+    if (!isLoaded) {
+      const elements = Array.from(
+        document.querySelectorAll("p, h1, h2, h3, li, blockquote")
+      );
+
+      // ✅ LỌC VĂN BẢN + BỎ ICON
+      const text = elements
+        .map((el) => removeEmojis(el.innerText.trim()))
+        .filter((s) => s.length > 0)
+        .join("\n");
+
+      // ✅ CHIA CÂU
+      const sentences = text.split(/(?<=[.?!])\s+/);
+      output.innerHTML = sentences
+        .map((s, i) => `<span id="sent-${i}">${s}</span>`)
+        .join(" ");
+      sentenceQueue = sentences;
+      isLoaded = true;
+    }
+
+    if (output.classList.contains("show")) {
+      output.classList.remove("show");
+      btnText.innerText = "📖 ĐỌC NỘI DUNG TRANG";
+      arrow.innerText = "⬇️";
+      stopTTS();
+    } else {
+      output.classList.add("show");
+      btnText.innerText = "🔽 ẨN NỘI DUNG TRANG ⬆️";
+      arrow.innerText = "⬆️";
+    }
+  }
+
+  function toggleTTS() {
+    if (!isSpeaking) {
+      startReading();
+    } else {
+      stopTTS();
+    }
+  }
+
+  function startReading() {
+    isSpeaking = true;
+    currentIdx = 0;
+    document.getElementById("ttsBtn").innerText = "⏹️ DỪNG NỘI DUNG TRANG";
+    readNextSentence();
+  }
+
+  function readNextSentence() {
+    if (currentIdx >= sentenceQueue.length) {
+      stopTTS();
+      return;
+    }
+
+    highlightSentence(currentIdx);
+
+    utterance = new SpeechSynthesisUtterance(sentenceQueue[currentIdx]);
+    utterance.lang = "vi-VN";
+
+    // 🔊 Gán giọng nếu có chọn
+    const voiceSelect = document.getElementById("voiceSelect");
+    const selectedVoiceURI = voiceSelect.value;
+    if (selectedVoiceURI) {
+      const found = voices.find((v) => v.voiceURI === selectedVoiceURI);
+      if (found) utterance.voice = found;
+    }
+
+    utterance.onend = () => {
+      unhighlightSentence(currentIdx);
+      currentIdx++;
+      if (isSpeaking) readNextSentence();
+    };
+
+    speechSynthesis.speak(utterance);
+  }
+
+  function stopTTS() {
+    speechSynthesis.cancel();
+    isSpeaking = false;
+    document.getElementById("ttsBtn").innerText = "🔊 NGHE NỘI DUNG TRANG";
+    unhighlightSentence(currentIdx);
+  }
+
+  function highlightSentence(idx) {
+    const el = document.getElementById(`sent-${idx}`);
+    if (el) el.classList.add("highlight");
+  }
+
+  function unhighlightSentence(idx) {
+    const el = document.getElementById(`sent-${idx}`);
+    if (el) el.classList.remove("highlight");
+  }
+
+  // 🔈 Lấy danh sách giọng đọc tiếng Việt
+  function loadVoices() {
+    voices = speechSynthesis.getVoices();
+    const voiceSelect = document.getElementById("voiceSelect");
+    voiceSelect.innerHTML = `<option value="">CHỌN GIỌNG ĐỌC</option>`;
+    voices
+      .filter(
+        (v) =>
+          v.lang.startsWith("vi") || v.name.toLowerCase().includes("vietnam")
+      )
+      .forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = v.voiceURI;
+        opt.textContent = `${v.name} (${v.lang})`;
+        voiceSelect.appendChild(opt);
+      });
+  }
+
+  speechSynthesis.onvoiceschanged = loadVoices;
+
+  // 🌙 Tự động chuyển nền sáng/tối
+  function autoSetTheme() {
+    const hour = new Date().getHours();
+    const body = document.body;
+    if (hour >= 18 || hour < 6) {
+      body.classList.add("dark");
+      body.classList.remove("light");
+    } else {
+      body.classList.add("light");
+      body.classList.remove("dark");
+    }
+  }
+
+  autoSetTheme();
+</script>
+
+<style>
+  .highlight {
+    background-color: yellow;
+    transition: background-color 0.3s ease;
+  }
+</style>
