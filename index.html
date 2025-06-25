@@ -17,23 +17,22 @@
   <body>
 
     <!-- NHÚNG ĐỌC TRANG -->
+
     <div style="display: flex; gap: 10px; flex-wrap: wrap">
-      <h2 style="text-align: center; color: #8b0000; margin-top: 0; top: 0; right: auto; left: 0;">
+      
         <button onclick="toggleRead()">
           <span id="button-text">📖 ĐỌC NỘI DUNG TRANG</span>
           <span id="arrow-icon" class="arrow">⬇️</span>
         </button>
-      </h2>
-      <h2 style="text-align: center; color: #8b0000; margin-top: 0; top: 0; right: auto; left: 50%;">
+      
         <button id="ttsBtn" onclick="toggleTTS()">
           🔊 NGHE NỘI DUNG TRANG
         </button>
-      </h2>
+      
       <select id="voiceSelect">
-        <h2 style="text-align: center; color: #8b0000; margin-top: 0; top: 0; right: 0; left: 25%;">
         <option value="">Chọn Giọng Đọc</option>
-        </h2>
       </select>
+      
     </div>
 
     <div id="output"></div>
@@ -214,21 +213,186 @@
       </a>
     </div>
     <div id="widgets">
+      <div id="weather-widget"></div>
       <div id="clock-widget"></div>
+      <div id="news-ticker"></div>
     </div>
     <!-- 🎵 Nhạc nền -->
+    
     <div style="text-align:center; margin: 20px 0;">
-      <audio id="background-music" src="./nhac-nen/nhac-nen.mp3" loop></audio>
+      <audio id="background-music" src="./background-music/nhac-nen.mp3" loop></audio>
       <button id="music-toggle">🎵 Bật nhạc nền</button>
-
     </div>
     </nav> 
       <hr>
     <h2>📿 VIDEO MỚI NHẤT TRÊN KÊNH PHẬT DẠY CON LÀM THEO</h2>
       <hr>
-      
-                  <!-- NHÚNG THỜI TIẾT -->
+  <div class="video-block" data-player-id="yt5" data-video-id="e3uG3NOH0BU">
+    <iframe id="yt5"></iframe>
+    <br>
+    <button class="mute-toggle">🔇 Tắt tiếng</button>
+  </div>
+    <hr>
+    <div class="video-grid">
+  <div class="video-block" data-player-id="yt1" data-video-id="e3uG3NOH0BU">
+    <iframe id="yt1"></iframe>
+    <br>
+    <button class="mute-toggle">🔇 Tắt tiếng</button>
+  </div>
+
+  <div class="video-block" data-player-id="yt2" data-video-id="e3uG3NOH0BU">
+    <iframe id="yt2"></iframe>
+    <br>
+    <button class="mute-toggle">🔇 Tắt tiếng</button>
+  </div>
+
+  <div class="video-block" data-player-id="yt3" data-video-id="e3uG3NOH0BU">
+    <iframe id="yt3"></iframe>
+    <br>
+    <button class="mute-toggle">🔇 Tắt tiếng</button>
+  </div>
+
+  <div class="video-block" data-player-id="yt4" data-video-id="e3uG3NOH0BU">
+    <iframe id="yt4"></iframe>
+    <br>
+    <button class="mute-toggle">🔇 Tắt tiếng</button>
+  </div>
+  </div>
+
+  <!-- ⚙️ Điều chỉnh tốc độ fade -->
+  <div class="fade-speed">
+    ⏱️ Tốc độ fade âm lượng:
+    <input id="fade-speed" type="range" min="100" max="1000" value="200">
+    <span id="fade-val">200 ms</span>
+  </div>
+
+  <script>
+    const players = {};
+    let fadeSpeed = 200;
+
+    // Cập nhật slider tốc độ
+    const fadeSlider = document.getElementById('fade-speed');
+    const fadeVal = document.getElementById('fade-val');
+    fadeSlider.addEventListener('input', () => {
+      fadeSpeed = parseInt(fadeSlider.value);
+      fadeVal.textContent = `${fadeSpeed} ms`;
+    });
+
+    // Tải API YouTube
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.body.appendChild(tag);
+
+    // Sau khi API đã sẵn sàng
+    function onYouTubeIframeAPIReady() {
+      document.querySelectorAll('.video-block').forEach(block => {
+        const playerId = block.dataset.playerId;
+        const videoId = block.dataset.videoId;
+        const iframe = block.querySelector('iframe');
+        const button = block.querySelector('.mute-toggle');
+
+        // Gán src cho iframe
+        iframe.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1`;
+
+        // Khởi tạo player
+        players[playerId] = new YT.Player(playerId, {
+          events: {
+            onReady: () => setupPlayerShared(playerId, iframe, button)
+          }
+        });
+      });
+    }
+
+    function setupPlayerShared(playerId, iframe, button) {
+      const player = players[playerId];
+      const key = `muteState_${playerId}`;
+      const saved = localStorage.getItem(key);
+
+      if (saved === 'unmuted') {
+        player.unMute();
+        fadeIn(player);
+        iframe.classList.remove('blurred');
+        button.textContent = '🔊 Đang phát tiếng';
+      } else {
+        player.mute();
+        iframe.classList.add('blurred');
+        button.textContent = '🔇 Tắt tiếng';
+      }
+      button.addEventListener('click', () => {
   
+        if (player.isMuted()) {
+          player.unMute();
+          fadeIn(player);
+          iframe.classList.remove('blurred');
+          button.textContent = '🔊 Đang phát tiếng';
+          localStorage.setItem(key, 'unmuted');
+        } else {
+          fadeOut(player, () => {
+            player.mute();
+            iframe.classList.add('blurred');
+            button.textContent = '🔇 Tắt tiếng';
+            localStorage.setItem(key, 'muted');
+          });
+        }
+      });
+    }
+
+    function fadeIn(player) {
+      let vol = 0;
+      player.setVolume(vol);
+      const fade = setInterval(() => {
+        if (vol < 100) {
+          vol += 10;
+          player.setVolume(vol);
+        } else {
+          clearInterval(fade);
+        }
+      }, fadeSpeed);
+    }
+
+    function fadeOut(player, callback) {
+      let vol = player.getVolume();
+      const fade = setInterval(() => {
+        if (vol > 0) {
+          vol -= 10;
+          player.setVolume(vol);
+        } else {
+          clearInterval(fade);
+          callback();
+        }
+      }, fadeSpeed);
+    }
+        
+        
+        // Nhạc nền
+      const music = document.getElementById('background-music');
+      const musicBtn = document.getElementById('music-toggle');
+      let musicPlaying = false;
+
+      musicBtn.addEventListener('click', () => {
+        if (!musicPlaying) {
+          music.play();
+          musicBtn.textContent = '⏸️ Tắt nhạc nền';
+          musicPlaying = true;
+          // Tắt tất cả video
+          Object.values(players).forEach(player => {
+            if (!player.isMuted()) {
+              fadeOut(player, () => {
+                player.mute();
+                document.getElementById(player.getIframe().id).classList.add('blurred');
+                // Lưu trạng thái
+                localStorage.setItem(`muteState_${player.getIframe().id}`, 'muted');
+              });
+            }
+          });
+        } else {
+          music.pause();
+          musicPlaying = false;
+          musicBtn.textContent = '🎵 Bật nhạc nền';
+        }
+      });
+        </script>
+        
       <hr>
 
     <script
